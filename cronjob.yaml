@@ -1,0 +1,32 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: mysql-backup
+spec:
+  schedule: "*/15 * * * *"
+  jobTemplate:
+    spec:
+      template: 
+        spec: 
+          containers:
+            - name: mysql-backup
+              image: gcr.io/bustling-winter-323317/cron-instance:1.0
+              command: ["bash", "/root/backup.sh"]
+              env:
+              - name: DB_HOST
+                value: clouddb
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                      name: mysql-secret
+                      key: username
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: mysql-secret
+                    key: password
+              - name: DB_NAME
+                value: gcp_training
+              - name: GS_BUCKET
+                value: mentoring-demo-final/mysql-backup
+          restartPolicy: Never
